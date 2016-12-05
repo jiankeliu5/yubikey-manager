@@ -47,6 +47,7 @@ class YKPIV(object):
     WRONG_PIN = -10
     INVALID_OBJECT = -11
     ALGORITHM_ERROR = -12
+    PIN_LOCKED = -13
 
     class OBJ(object):
         CAPABILITY = 0x5fc107
@@ -70,6 +71,40 @@ class YKPIV(object):
         ECCP256 = 0x11
         ECCP384 = 0x14
 
+    class PINPOLICY(object):
+        DEFAULT = 0x00
+        NEVER = 0x01
+        ONCE = 0x02
+        ALWAYS = 0x03
+
+    class TOUCHPOLICY(object):
+        DEFAULT = 0x00
+        NEVER = 0x01
+        ALWAYS = 0x02
+        CACHED = 0x03
+
+    class INS(object):
+        VERIFY = 0x20
+        CHANGE_REFERENCE = 0x24
+        RESET_RETRY = 0x2c
+        GENERATE_ASYMMETRIC = 0x47
+        AUTHENTICATE = 0x87
+        GET_DATA = 0xcb
+        PUT_DATA = 0xdb
+        SET_MGMKEY = 0xff
+        IMPORT_KEY = 0xfe
+        GET_VERSION = 0xfd
+        RESET = 0xfb
+        SET_PIN_RETRIES = 0xfa
+        ATTEST = 0xf9
+
+    class SW(object):
+        SUCCESS = 0x9000
+        ERR_SECURITY_STATUS = 0x6982
+        ERR_AUTH_BLOCKED = 0x6983
+        ERR_INCORRECT_PARAM = 0x6a80
+        ERR_INCORRECT_SLOT = 0x6b00
+
 
 class LibYkPiv(CLibrary):
     ykpiv_strerror = [ykpiv_rc], c_char_p
@@ -86,6 +121,12 @@ class LibYkPiv(CLibrary):
                            POINTER(c_ulong), POINTER(c_int)], ykpiv_rc
     ykpiv_authenticate = [POINTER(ykpiv_state), POINTER(c_ubyte)], ykpiv_rc
     ykpiv_set_mgmkey = [POINTER(ykpiv_state), POINTER(c_ubyte)], ykpiv_rc
+    ykpiv_change_pin = [POINTER(ykpiv_state), c_char_p, c_size_t, c_char_p,
+                        c_size_t, POINTER(c_int)], ykpiv_rc
+    ykpiv_change_puk = [POINTER(ykpiv_state), c_char_p, c_size_t, c_char_p,
+                        c_size_t, POINTER(c_int)], ykpiv_rc
+    ykpiv_unblock_pin = [POINTER(ykpiv_state), c_char_p, c_size_t, c_char_p,
+                         c_size_t, POINTER(c_int)], ykpiv_rc
     ykpiv_hex_decode = [c_char_p, c_size_t, POINTER(c_ubyte), POINTER(c_size_t)
                         ], ykpiv_rc
     ykpiv_sign_data = [POINTER(ykpiv_state), POINTER(c_ubyte), c_size_t,
